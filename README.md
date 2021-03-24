@@ -76,3 +76,91 @@ def login():
 If u want to create custom html page with some parametrs -> read about templats
 
 
+### Base data
+
+I'm really like Postgress, let's connect that to out server
+
+1. find / -name "postgresql.conf"
+in command, and get path of this file.
+that change in this file:
+```
+#listen_addresses = '*'	
+port = 1234 (your open port)
+```
+save
+2. you need to set password to postgress acc:
+```
+sudo -u postgres psql
+```
+and in new window print:
+```
+ALTER USER postgres PASSWORD 'yourpass';
+CREATE DATABASE my_database;
+```
+
+
+3. add some code in your app.py
+```
+from flask import Flask
+from markupsafe import escape
+from flask import request
+from flask import render_template
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+
+app = Flask(__name__)
+
+POSTGRES = {
+    'user': 'postgres',
+    'pw': 'yourpass',
+    'db': 'my_database',
+    'host': 'localhost',
+    'port': 'yourport',
+}
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://%(user)s:\
+%(pw)s@%(host)s:%(port)s/%(db)s' % POSTGRES
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
+
+@app.route('/home/')
+def hello_world():
+    return 'Hello, World!'
+
+@app.route('/user/<username>')
+def show_user_profile(username):
+    # show the user profile for that user
+    return 'User %s' % escape(username)
+
+@app.route('/hello/<name>')
+def hello(name=None):
+    return render_template('hello.html', name=name)
+
+@app.route("/me")
+def me_api():
+    #user = get_current_user()
+    return {
+        "username": "user.username",
+        "theme": "user.theme",
+    }
+
+class CarsModel(db.Model):
+    __tablename__ = 'cars'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String())
+    model = db.Column(db.String())
+    doors = db.Column(db.Integer())
+
+    def __init__(self, name, model, doors):
+        self.name = name
+        self.model = model
+        self.doors = doors
+
+    def __repr__(self):
+        return f"<Car {self.name}>"
+
+```
