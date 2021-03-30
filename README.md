@@ -164,3 +164,19 @@ class CarsModel(db.Model):
         return f"<Car {self.name}>"
 
 ```
+
+
+### 2. Admin panel
+
+let's import 
+```
+pip install flask-admin
+```
+
+and then get dependencies to main file app.py
+```
+from flask_admin import Admin
+app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
+admin = Admin(app, name='microbase', template_mode='bootstrap3')
+```
+https://flask-admin.readthedocs.io/en/latest/
