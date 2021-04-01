@@ -180,3 +180,98 @@ app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
 admin = Admin(app, name='microbase', template_mode='bootstrap3')
 ```
 https://flask-admin.readthedocs.io/en/latest/
+
+and let's add some edit baseData:   
+```
+admin.add_view(ModelView(CarsModel, db.session))
+```
+
+1 week after:
+Soooo now i have changed some files and create new Tables:
+```
+from flask import Flask
+from markupsafe import escape
+from flask import request
+from flask import render_template
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
+
+
+app = Flask(__name__)
+
+POSTGRES = {
+    'user': 'postgres',
+    'pw': 'yourpass',
+    'db': 'my_database',
+    'host': 'localhost',
+    'port': 'yourport',
+}
+
+app.config['FLASK_ADMIN_SWATCH'] = 'cyborg'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://%(user)s:\
+%(pw)s@%(host)s:%(port)s/%(db)s' % POSTGRES
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+admin = Admin(app, name='microbase', template_mode='bootstrap3')
+
+@app.route('/home/')
+def hello_world():
+    return 'Hello, World!'
+
+@app.route('/user/<username>')
+def show_user_profile(username):
+    # show the user profile for that user
+    return 'User %s' % escape(username)
+
+@app.route('/hello/<name>')
+def hello(name=None):
+    return render_template('hello.html', name=name)
+
+@app.route("/me")
+def me_api():
+    #user = get_current_user()
+    return {
+        "username": "user.username",
+        "theme": "user.theme",
+    }
+
+class UserModel(db.Model):
+    __tablename__ = 'user'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String())
+    mail = db.Column(db.String())
+    posts = db.relationship('PostModel', backref='author', lazy=True)
+    def __init__(self, name, mail, posts):
+        self.name = name
+        self.mail = mail
+        self.posts = posts
+
+    def __repr__(self):
+        return f"<user {self.name}>"
+
+class PostModel(db.Model):
+    __tablename__ = 'post'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String())
+    text = db.Column(db.String())
+    user_id = db.Column(db.Integer(), db.ForeignKey('user.id'), nullable=False)
+    def __init__(self, name, mail, posts):
+        self.name = name
+        self.mail = mail
+    
+    def __repr__(self):
+        return f"<post {self.name}>"
+
+admin.add_view(ModelView(UserModel, db.session))
+admin.add_view(ModelView(PostModel, db.session))
+```
+
+This is full code of my server now. 
+So, I have added some new features - User/Post Tables and linking beetwen them
