@@ -275,3 +275,9 @@ admin.add_view(ModelView(PostModel, db.session))
 
 This is full code of my server now. 
 So, I have added some new features - User/Post Tables and linking beetwen them
+
+
+And begin new thing.
+
+### 3. API Flask.
+
